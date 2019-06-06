@@ -3,14 +3,13 @@ import glob
 import numpy as np
 import scipy
 import skued
-from run_parallel_processes import start_parallel_analysis, analyse_proc_template
+from run_parallel_processes import start_parallel_analysis
 
 
-def dispatch_file_name(n_cpu, f_list, stack_file_name_func, queues, analysis_ps):
+def dispatch_file_name(n_cpu, f_list, stack_file_name_func, queues):
     """Dispatch files names among the different queues waiting to be analysed."""
     for i in range(n_cpu):
         stack_file_name_func(f_list[i::n_cpu], queues[i])
-        analysis_ps[i].start()
 
 
 def refine_peakpos_arb_dim(peakpos_all, image, numrefine, window_size):
@@ -55,7 +54,7 @@ def refine_peakpos_arb_dim(peakpos_all, image, numrefine, window_size):
 def personal_analysis_func(filename, idx):
     """Perform the analysis from the file name."""
 
-    #print('Start analysis fname {} on process {}'.format(filename, idx))
+    print('Start analysis fname {} on process {}'.format(filename, idx))
     d = skued.diffread(filename)
 
     peak_pos_fname = 'data/peakpos{}.npy'.format(idx)
@@ -73,17 +72,13 @@ def personal_analysis_func(filename, idx):
 
     np.save(peak_pos_fname, res)
 
-    #print('Finish analysis fname {} on process {}'.format(filename, idx))
+    print('Finish analysis fname {} on process {}'.format(filename, idx))
     return res
-
-
-def personal_analysis_proc(queue_to_analyse, idx, queue_analyzed):
-    analyse_proc_template(queue_to_analyse, idx, queue_analyzed, personal_analysis_func)
 
 
 def recombine_func(analysis_output, n):
     """Manage the outputs of the analysis performed on the file."""
-    print('Analysed output ',n,' ', analysis_output)
+    print('Analysed output ', n, ' ', analysis_output)
     with open('test.txt', 'a') as fp:
         fp.write('{}\n'.format(n))
 
@@ -93,9 +88,8 @@ print(file_list)
 
 start_parallel_analysis(
     file_list,
-    #task_split_func=dispatch_file_name,
-    # analyse_func=personal_analysis_func,
+    task_split_func=dispatch_file_name,
+    analyse_func=personal_analysis_func,
     recombine_func=recombine_func,
-    analysis_p=personal_analysis_proc,
     num_cpu=None
 )
