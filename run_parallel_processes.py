@@ -50,7 +50,7 @@ def recombine_proc(queue_analyzed, recombine_func, n_entries):
         # get the next available result from the list
         res = queue_analyzed.get(timeout=10)
         # pass it to the function with assembles the outputs of the analyse_func together
-        recombine_func(res)
+        recombine_func(res, n_loop)
         n_loop = n_loop + 1
     print('{} writer done in {}s'.format(pr.pid, time.time() - wstart))
 
@@ -60,8 +60,8 @@ def start_parallel_analysis(
         task_split_func,
         analyse_func,
         recombine_func,
-        analysis_p=analyse_proc,
-        recombine_p=recombine_proc,
+        analysis_proc=analyse_proc,
+        recombine_proc=recombine_proc,
         num_cpu=None
 ):
     """
@@ -88,7 +88,7 @@ def start_parallel_analysis(
         to_analyse_queue = mp.Queue()
         to_analyse_queues.append(to_analyse_queue)
         analysis_p = mp.Process(
-            target=analysis_p,
+            target=analysis_proc,
             args=(to_analyse_queue, i, queue_analyzed, analyse_func)
         )
         analysis_p.daemon = True
@@ -100,13 +100,16 @@ def start_parallel_analysis(
     task_split_func(num_cpu, file_list, stack_file_name, to_analyse_queues)
 
     # start the analysis processes
-    for i, in range(num_cpu):
+    for i in range(num_cpu):
         analysis_ps[i].start()
 
     n_entries = len(file_list)
     # start the recombining process which manages the outputs from the analyse_func
     time.sleep(1)
-    recombine_p = mp.Process(target=recombine_p, args=(queue_analyzed, recombine_func, n_entries))
+    recombine_p = mp.Process(
+        target=recombine_proc,
+        args=(queue_analyzed, recombine_func, n_entries)
+    )
     recombine_p.daemon = True
 
     time.sleep(2)
