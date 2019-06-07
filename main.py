@@ -5,6 +5,10 @@ import scipy
 import skued
 from run_parallel_processes import start_parallel_analysis
 
+FILE_LIST = glob.glob('data/*.tif')
+
+MAT_DEFAULTS=np.ones((3,2))
+TRUC_DEFAULT="dsakjd"
 
 def dispatch_file_name(n_cpu, f_list, stack_file_name_func, queues):
     """Dispatch files names among the different queues waiting to be analysed."""
@@ -51,9 +55,12 @@ def refine_peakpos_arb_dim(peakpos_all, image, numrefine, window_size):
     return new_peakpos_all
 
 
-def personal_analysis_func(filename, idx):
+def personal_analysis_func(filename, idx, matrix=MAT_DEFAULTS, truc=TRUC_DEFAULT):
     """Perform the analysis from the file name."""
 
+
+    print(idx*MAT_DEFAULTS)
+    print(truc)
     print('Start analysis fname {} on process {}'.format(filename, idx))
     d = skued.diffread(filename)
 
@@ -67,27 +74,28 @@ def personal_analysis_func(filename, idx):
     # try:
     #     res = refine_peakpos_arb_dim(peakpos_all, d, 5, 8)
     # except:
-    #     print('fucking nans')
     #     res = np.array([1,2])
 
     np.save(peak_pos_fname, res)
 
     print('Finish analysis fname {} on process {}'.format(filename, idx))
+
+    # don't forget to add some info about the file_name in res (i.e. its index in the file_list)
+    idx_file = FILE_LIST.index(filename)
+
     return res
 
 
 def recombine_func(analysis_output, n):
     """Manage the outputs of the analysis performed on the file."""
+
     print('Analysed output ', n, ' ', analysis_output)
     with open('test.txt', 'a') as fp:
         fp.write('{}\n'.format(n))
 
 
-file_list = glob.glob('data/*.tif')
-print(file_list)
-
 start_parallel_analysis(
-    file_list,
+    FILE_LIST,
     task_split_func=dispatch_file_name,
     analyse_func=personal_analysis_func,
     recombine_func=recombine_func,
