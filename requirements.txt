@@ -2,3 +2,4 @@ dill==0.2.9
 multiprocess==0.70.7
 numpy==1.16.4
 scikit-ued==1.0.1.1
+pip install git+https://github.com/hseiler/fhi_fed_utils.git@developp
