@@ -4,17 +4,18 @@ import numpy as np
 import scipy
 import skued
 from run_parallel_processes import start_parallel_analysis
+sys.path.append(r'C:\Users\HEL\fhi-fed-utils')
+from fhi-fed-utils import utils
 
-FILE_LIST = glob.glob('data/*.tif')
+PATH = 'W://HEED//data//TemCam//2019//20190413//meas2//'
+FILE_LIST = glob.glob(PATH + '*.tif')
+print(FILE_LIST)
+NO_OF_FILES = len(glob.glob(PATH + '*.tif'))
 
 MAT_DEFAULTS=np.ones((3,2))
 TRUC_DEFAULT="dsakjd"
 
-def dispatch_file_name(n_cpu, f_list, stack_file_name_func, queues):
-    """Dispatch files names among the different queues waiting to be analysed."""
-    for i in range(n_cpu):
-        stack_file_name_func(f_list[i::n_cpu], queues[i])
-
+#Loads flatfield
 
 def refine_peakpos_arb_dim(peakpos_all, image, numrefine, window_size):
 
