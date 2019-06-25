@@ -83,6 +83,7 @@ def dispatch_file_name(n_cpu, f_list, stack_file_name_func, queues):
         stack_file_name_func(f_list[i::n_cpu], queues[i])
 
 
+
 def personal_analysis_func(filename, idx, mask_total_counts=masked_total_counts, laser_bkg = LASER_BKG, FF = FF, mask_total = mask_total, mask_dyn_bg = masked_dyn_bg, peak_pos = PEAK_POS, center = center, window_size_intensity = window_size_intensity):
     """Perform the analysis from the file name."""
 
@@ -95,8 +96,31 @@ def personal_analysis_func(filename, idx, mask_total_counts=masked_total_counts,
     #Substract background and flatfield
     image = utils.remove_bgk(image, laser_bkg, FF)
 
-    new_peakpos_all2 = peak_pos[idx_file,:,:]
+    radius, intensity = utils.azimuthal_average(image, (center[1], center[0]), mask = np.invert(np.isnan(mask_dyn_bg)))
+    distance_matrix = utils.centeredDistanceMatrix_centered(n, center[1] - 0.5*n, center[0] -0.5*n)
+    bg_im = utils.rings_to_average(distance_matrix,intensity,len(intensity))
 
+
+    image_bgs = image - bg_im
+
+    Image_bgs = Image_BG - Bg_im;
+    Image_mask = Image_bgs. * mask_corr_4;
+    Image_mask(isnan(Image_mask)) = 0;
+    Image_2_mask = Image_bgs - Image_mask;
+    Image_2_mask(isnan(Image_2_mask)) = 0;
+
+    % calculate
+    min
+    Image_ref = Image_1_mask;
+    Image_sample = Image_2_mask;
+    x0 = [x(1), x(2)];
+    [x, fval, exitflag, output] = fminsearch( @ (x)
+    Fun_diff(x, Image_ref, Image_sample), x0, optimset('TolX', 1e-8));
+    % add
+    image
+    translate
+    vector
+    image_corr = imtranslate(Image_BG, [x(1), x(2)]);
     #Total counts
     totale = np.nansum(image*mask_total_counts)
     #Dynamic background
